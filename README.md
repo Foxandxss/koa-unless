@@ -1,5 +1,7 @@
 # Koa Unless
 
+[![Build Status](https://travis-ci.org/Foxandxss/koa-unless.svg?branch=master)]
+
 Conditionally skip a middleware when a condition is met.
 
 ## Install (Not pushed yet)
