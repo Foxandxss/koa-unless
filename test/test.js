@@ -1,4 +1,4 @@
-var koa     = require('koa');
+var Koa     = require('koa');
 var request = require('supertest');
 
 var unless  = require('../index');
@@ -7,8 +7,8 @@ describe('koa-unless', function() {
   var middleware;
 
   beforeEach(function() {
-    middleware = function *(next) {
-      this.body = {executed: true};
+    middleware = function(ctx, next) {
+      ctx.body = {executed: true};
     };
 
     middleware.unless = unless;
@@ -16,7 +16,7 @@ describe('koa-unless', function() {
 
   describe('with PATH exception', function() {
     it('should not call the middleware when one of the path match', function(done) {
-      var app = koa();
+      var app = new Koa();
 
       app.use(middleware.unless({ path: ['/foo'] }));
       request(app.listen())
@@ -25,7 +25,7 @@ describe('koa-unless', function() {
     });
 
     it('should call the middleware when the path doesnt match', function(done) {
-      var app = koa();
+      var app = new Koa();
 
       app.use(middleware.unless({ path: ['/foo'] }));
       request(app.listen())
@@ -36,7 +36,7 @@ describe('koa-unless', function() {
 
   describe('with PATH (regexp) exception', function() {
     it('should not call the middleware when the regex match', function(done) {
-      var app = koa();
+      var app = new Koa();
 
       app.use(middleware.unless({ path: ['/foo', /ar$/ig] }));
       request(app.listen())
@@ -46,12 +46,12 @@ describe('koa-unless', function() {
   });
 
   describe('with PATH (useOriginalUrl) exception', function() {
-    it('should not call the middleware when one of the path match this.url instead of this.originalUrl', function(done) {
-      var app = koa();
+    it('should not call the middleware when one of the path match ctx.url instead of ctx.originalUrl', function(done) {
+      var app = new Koa();
 
-      app.use(function *(next) {
-        this.url = '/foo';
-        yield *next;
+      app.use(function(ctx, next) {
+        ctx.url = '/foo';
+        return next();
       });
       app.use(middleware.unless({ path: ['/foo'], useOriginalUrl: false }));
       request(app.listen())
@@ -59,12 +59,12 @@ describe('koa-unless', function() {
         .expect(404, done);
     });
 
-    it('should call the middleware when the path doesnt match this.url even if path matches this.originalUrl', function(done) {
-      var app = koa();
+    it('should call the middleware when the path doesnt match ctx.url even if path matches ctx.originalUrl', function(done) {
+      var app = new Koa();
 
-      app.use(function *(next) {
-        this.originalUrl = '/foo';
-        yield *next;
+      app.use(function(ctx, next) {
+        ctx.originalUrl = '/foo';
+        return next();
       });
       app.use(middleware.unless({ path: ['/foo'], useOriginalUrl: false }));
       request(app.listen())
@@ -75,7 +75,7 @@ describe('koa-unless', function() {
 
   describe('with EXT exception', function() {
     it('should not call the middleware when the ext match', function(done) {
-      var app = koa();
+      var app = new Koa();
 
       app.use(middleware.unless({ ext: ['html', 'css'] }));
       request(app.listen())
@@ -84,7 +84,7 @@ describe('koa-unless', function() {
     });
 
     it('should call the middleware when the ext doesnt match', function(done) {
-      var app = koa();
+      var app = new Koa();
 
       app.use(middleware.unless({ ext: ['html', 'css'] }));
       request(app.listen())
@@ -95,7 +95,7 @@ describe('koa-unless', function() {
 
   describe('with METHOD exception', function() {
     it('should not call the middleware when the method match', function(done) {
-      var app = koa();
+      var app = new Koa();
 
       app.use(middleware.unless({ method: ['GET', 'OPTIONS'] }));
       request(app.listen())
@@ -104,7 +104,7 @@ describe('koa-unless', function() {
     });
 
     it('should call the middleware when the method doesnt match', function(done) {
-      var app = koa();
+      var app = new Koa();
 
       app.use(middleware.unless({ method: ['GET', 'OPTIONS'] }));
       request(app.listen())
@@ -115,10 +115,10 @@ describe('koa-unless', function() {
 
   describe('with custom exception', function() {
     it('should not call the middleware when the custom rule match', function(done) {
-      var app = koa();
+      var app = new Koa();
 
-      app.use(middleware.unless(function() {
-        return this.url === '/index';
+      app.use(middleware.unless(function(ctx) {
+        return ctx.url === '/index';
       }));
       request(app.listen())
         .get('/index')
@@ -126,10 +126,10 @@ describe('koa-unless', function() {
     });
 
     it('should call the middleware when the custom rule doesnt match', function(done) {
-      var app = koa();
+      var app = new Koa();
 
-      app.use(middleware.unless(function() {
-        return this.url === '/index';
+      app.use(middleware.unless(function(ctx) {
+        return ctx.url === '/index';
       }));
       request(app.listen())
         .get('/home')

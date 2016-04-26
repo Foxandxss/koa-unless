@@ -1,3 +1,4 @@
+'use strict';
 var url = require('url');
 
 module.exports = function(options) {
@@ -6,13 +7,13 @@ module.exports = function(options) {
   var opts = typeof options === 'function' ? {custom: options} : options;
   opts.useOriginalUrl = (typeof opts.useOriginalUrl === 'undefined') ? true : opts.useOriginalUrl;
 
-  return function *(next) {
-    var requestedUrl = url.parse((opts.useOriginalUrl ? this.originalUrl : this.url) || '', true);
+  return function(ctx, next) {
+    var requestedUrl = url.parse((opts.useOriginalUrl ? ctx.originalUrl : ctx.url) || '', true);
 
     var skip = false;
 
     if (opts.custom) {
-      skip = skip || opts.custom.call(this);
+      skip = skip || opts.custom(ctx);
     }
 
     var paths = !opts.path || Array.isArray(opts.path) ?
@@ -38,13 +39,13 @@ module.exports = function(options) {
                   opts.method : [opts.method];
 
     if (methods) {
-      skip = skip || !!~methods.indexOf(this.method);
+      skip = skip || !!~methods.indexOf(ctx.method);
     }
 
     if (skip) {
-      return yield *next;
+      return next();
     }
 
-    yield *parent.call(this, next);
+    return parent(ctx, next);
   };
 };
