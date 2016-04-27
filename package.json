@@ -8,7 +8,8 @@
   },
   "keywords": [
     "koa",
-    "middleware"
+    "middleware",
+    "unless"
   ],
   "author": "Jesus Rodriguez <Foxandxss@gmail.com>",
   "repository": {

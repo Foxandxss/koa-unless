@@ -26,7 +26,7 @@ If you are authoring a middleware you can support unless as follow:
 
 ```javascript
 module.exports = function () {
-  var mymid = function *(next) {
+  var mymid = function(ctx, next) {
 	// Do something
   };
 
@@ -42,7 +42,7 @@ module.exports = function () {
 -  `path` it could be an string, a regexp or an array of any of those. If the request path match, the middleware will not run.
 -  `ext` it could be an string or an array of strings. If the request path ends with one of these extensions the middleware will not run.
 -  `custom` it must be a function that returns `true` / `false`. If the function returns true for the given request, ithe middleware will not run. The function will have access to Koa's context via `this`
--  `useOriginalUrl` it should be `true` or `false`, default is `true`. if false, `path` will match against `this.url` instead of `this.originalUrl`.
+-  `useOriginalUrl` it should be `true` or `false`, default is `true`. if false, `path` will match against `ctx.url` instead of `ctx.originalUrl`.
 
 
 ## Examples
