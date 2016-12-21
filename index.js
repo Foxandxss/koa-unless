@@ -7,9 +7,9 @@
 
 var url = require('url');
 
-/** Creates a middleware wrapper that verify if the original middleware should be executed or not. */
+/** Creates a wrapper middleware that verifies if the original middleware should be skipped. */
 module.exports = function(options) {
-  var parent = this;
+  var originalMiddleware = this;
 
   // If a custom function was passed directly, creates a new object literal that holds it as a property called custom.
   var opts = typeof options === 'function' ? { custom: options } : options;
@@ -23,7 +23,7 @@ module.exports = function(options) {
       return yield *next;
     }
 
-    yield *parent.call(this, next);
+    yield *originalMiddleware.call(this, next);
   };
 };
 
