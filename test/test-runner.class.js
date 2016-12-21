@@ -21,15 +21,15 @@ module.exports = class TestRunner {
       instance.SCENARIO_PATHS.forEach((scenario) => {
         let acceptDeny = scenario.expected == 200 ? 'accept' : 'deny';
 
-        let useOriginalUrl = scenario.useOriginalUrl;
-        let config = scenario.config || { path: scenario.path, useOriginalUrl: useOriginalUrl };
+        let dontUseOriginalUrl = scenario.dontUseOriginalUrl;
+        let config = scenario.config || { path: scenario.path, useOriginalUrl: !dontUseOriginalUrl };
 
         let testMethod = scenario.testMethod || 'get';
 
         it(`should ${acceptDeny} access to ${scenario.testSample} when configured with: ${config}`, function (done) {
           let app = koa();
 
-          if (!useOriginalUrl) {
+          if (dontUseOriginalUrl) {
             app.use(function *(next) {
               this.url = '/foo';
               yield *next;
