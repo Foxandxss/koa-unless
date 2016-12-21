@@ -21,10 +21,12 @@ module.exports = class TestRunner {
       instance.SCENARIO_PATHS.forEach((scenario) => {
         let acceptDeny = scenario.expected == 200 ? 'accept' : 'deny';
 
-        it(`should ${acceptDeny} access to ${scenario.testSample} when configured with: ${scenario.path}`, function (done) {
+        let useOriginalUrl = scenario.useOriginalUrl;
+        let config = scenario.config || { path: scenario.path, useOriginalUrl: useOriginalUrl };
+
+        it(`should ${acceptDeny} access to ${scenario.testSample} when configured with: ${config}`, function (done) {
           let app = koa();
 
-          let useOriginalUrl = scenario.useOriginalUrl;
           if (!useOriginalUrl) {
             app.use(function *(next) {
               this.url = '/foo';
@@ -32,7 +34,7 @@ module.exports = class TestRunner {
             });
           }
 
-          app.use(instance.middleware.unless({ path: scenario.path, useOriginalUrl: useOriginalUrl }));
+          app.use(instance.middleware.unless(config));
           request(app.listen())
             .get(scenario.testSample)
             .expect(scenario.expected, done);
