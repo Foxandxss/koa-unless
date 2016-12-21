@@ -24,6 +24,8 @@ module.exports = class TestRunner {
         let useOriginalUrl = scenario.useOriginalUrl;
         let config = scenario.config || { path: scenario.path, useOriginalUrl: useOriginalUrl };
 
+        let testMethod = scenario.testMethod || 'get';
+
         it(`should ${acceptDeny} access to ${scenario.testSample} when configured with: ${config}`, function (done) {
           let app = koa();
 
@@ -35,8 +37,7 @@ module.exports = class TestRunner {
           }
 
           app.use(instance.middleware.unless(config));
-          request(app.listen())
-            .get(scenario.testSample)
+          request(app.listen())[testMethod](scenario.testSample)
             .expect(scenario.expected, done);
         });
       });
