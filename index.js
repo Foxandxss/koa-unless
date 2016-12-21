@@ -18,6 +18,7 @@ module.exports = function(options) {
   return function *(next) {
     var requestedUrl = url.parse((opts.useOriginalUrl ? this.originalUrl : this.url) || '', true);
 
+    // any match means 'skip original middleware'
     if (matchesCustom(this, opts) || matchesPath(requestedUrl, opts) ||
         matchesExtension(requestedUrl, opts) || matchesMethod(this.method, opts)) {
       return yield *next;
