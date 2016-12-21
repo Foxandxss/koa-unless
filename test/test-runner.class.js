@@ -24,7 +24,15 @@ module.exports = class TestRunner {
         it(`should ${acceptDeny} access to ${scenario.testSample} when configured with: ${scenario.path}`, function (done) {
           let app = koa();
 
-          app.use(instance.middleware.unless({ path: scenario.path }));
+          let useOriginalUrl = scenario.useOriginalUrl;
+          if (!useOriginalUrl) {
+            app.use(function *(next) {
+              this.url = '/foo';
+              yield *next;
+            });
+          }
+
+          app.use(instance.middleware.unless({ path: scenario.path, useOriginalUrl: useOriginalUrl }));
           request(app.listen())
             .get(scenario.testSample)
             .expect(scenario.expected, done);
