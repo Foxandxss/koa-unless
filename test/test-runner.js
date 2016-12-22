@@ -23,7 +23,14 @@ function runTests(testName, scenariosPath) {
 
       let testMethod = scenario.testMethod || 'get';
 
-      it(`should ${acceptDeny} access to ${scenario.testSample} when configured with: ${config}`, function (done) {
+      let description = 'should ';
+      description += acceptDeny ? 'accept ' : 'deny ';
+      description += 'access to ';
+      description += scenario.testSample + ' ';
+      description += 'when configured with: ';
+      description += config;
+
+      it(description, function (done) {
         let app = koa();
 
         if (dontUseOriginalUrl) {
