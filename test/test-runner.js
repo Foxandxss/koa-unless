@@ -1,3 +1,5 @@
+'use strict';
+
 const unless  = require('../index');
 const koa = require('koa');
 const request = require('supertest');
