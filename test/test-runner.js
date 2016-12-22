@@ -1,5 +1,3 @@
-'use strict';
-
 const unless  = require('../index');
 const koa = require('koa');
 const request = require('supertest');
@@ -23,14 +21,7 @@ function runTests(testName, scenariosPath) {
 
       let testMethod = scenario.testMethod || 'get';
 
-      let description = 'should ';
-      description += acceptDeny ? 'accept ' : 'deny ';
-      description += 'access to ';
-      description += scenario.testSample + ' ';
-      description += 'when configured with: ';
-      description += config;
-
-      it(description, function (done) {
+      it(`should ${acceptDeny} access to ${scenario.testSample} when configured with: ${config}`, function (done) {
         let app = koa();
 
         if (dontUseOriginalUrl) {
