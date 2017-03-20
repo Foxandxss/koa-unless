@@ -15,16 +15,16 @@ module.exports = function(options) {
   var opts = typeof options === 'function' ? { custom: options } : options;
 
   // Returns the middleware that wraps the original one.
-  return function(next) {
-    var requestedUrl = url.parse((opts.useOriginalUrl ? this.originalUrl : this.url) || '', true);
+  return function(ctx, next) {
+    var requestedUrl = url.parse((opts.useOriginalUrl ? ctx.originalUrl : ctx.url) || '', true);
 
     // any match means 'skip original middleware'
     if (matchesCustom(this, opts) || matchesPath(requestedUrl, opts) ||
-        matchesExtension(requestedUrl, opts) || matchesMethod(this.method, opts)) {
+        matchesExtension(requestedUrl, opts) || matchesMethod(ctx.method, opts)) {
       return next();
     }
 
-    return originalMiddleware.call(this, next);
+    return originalMiddleware(ctx, next);
   };
 };
 
