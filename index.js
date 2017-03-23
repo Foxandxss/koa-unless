@@ -8,23 +8,27 @@
 var url = require('url');
 
 /** Creates a wrapper middleware that verifies if the original middleware should be skipped. */
-module.exports = function(options) {
+module.exports = function (options) {
   var originalMiddleware = this;
 
   // If a custom function was passed directly, creates a new object literal that holds it as a property called custom.
-  var opts = typeof options === 'function' ? { custom: options } : options;
+  var opts = typeof options === 'function' ? {custom: options} : options;
 
   // Returns the middleware that wraps the original one.
-  return function(ctx, next) {
-    var requestedUrl = url.parse((opts.useOriginalUrl ? ctx.originalUrl : ctx.url) || '', true);
+  return function *(next) {
+    var requestedUrl = url.parse((opts.useOriginalUrl ? this.originalUrl : this.url) || '', true);
 
     // any match means 'skip original middleware'
     if (matchesCustom(this, opts) || matchesPath(requestedUrl, opts) ||
-        matchesExtension(requestedUrl, opts) || matchesMethod(ctx.method, opts)) {
-      return next();
+      matchesExtension(requestedUrl, opts) || matchesMethod(this.method, opts)) {
+      return yield *next;
     }
 
-    return originalMiddleware(ctx, next);
+    if (originalMiddleware.constructor.name === 'GeneratorFunction') {
+      yield *originalMiddleware.call(this, next);
+    } else {
+      return originalMiddleware.call(this);
+    }
   };
 };
 
@@ -54,9 +58,9 @@ function matchesPath(requestedUrl, opts) {
     opts.path : [opts.path];
 
   if (paths) {
-    return paths.some(function(p) {
+    return paths.some(function (p) {
       return (typeof p === 'string' && p === requestedUrl.pathname) ||
-        (p instanceof RegExp && !! p.exec(requestedUrl.pathname));
+        (p instanceof RegExp && p.test(requestedUrl.pathname));
     });
   }
 
@@ -75,7 +79,7 @@ function matchesExtension(requestedUrl, opts) {
     opts.ext : [opts.ext];
 
   if (exts) {
-    return exts.some(function(ext) {
+    return exts.some(function (ext) {
       return requestedUrl.pathname.substr(ext.length * -1) === ext;
     });
   }
