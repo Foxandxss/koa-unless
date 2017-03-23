@@ -1,14 +1,16 @@
 'use strict';
 
 const unless  = require('../index');
-const koa = require('koa');
+const Koa = require('koa');
 const request = require('supertest');
 
 module.exports = runTests;
 
+
 function runTests(testName, scenariosPath) {
-  let middleware = function *() {
-    this.body = { executed: true };
+  let middleware = function(ctx, next) {
+    ctx.body = { executed: true };
+    return next();
   };
 
   middleware.unless = unless;
@@ -20,16 +22,16 @@ function runTests(testName, scenariosPath) {
 
       let dontUseOriginalUrl = scenario.dontUseOriginalUrl;
       let config = scenario.config || { path: scenario.path, useOriginalUrl: !dontUseOriginalUrl };
-
+      let readableConfig = typeof config === 'function' ? config.name : JSON.stringify(config);
       let testMethod = scenario.testMethod || 'get';
 
-      it(`should ${acceptDeny} access to ${scenario.testSample} when configured with: ${config}`, function (done) {
-        let app = koa();
+      it(`should ${acceptDeny} access to ${scenario.testSample} when configured with: ${readableConfig}`, function (done) {
+        let app = new Koa();
 
         if (dontUseOriginalUrl) {
-          app.use(function *(next) {
-            this.url = '/foo';
-            yield *next;
+          app.use(function(ctx, next) {
+            ctx.url = '/foo';
+            return next();
           });
         }
 
