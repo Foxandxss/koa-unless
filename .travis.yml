@@ -1,7 +1,5 @@
 language: node_js
 node_js:
-  - "6.1"
   - "6"
-  - "5"
-  - "4"
+  - "7"
 script: "make test"

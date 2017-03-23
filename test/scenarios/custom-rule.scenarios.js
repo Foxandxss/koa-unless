@@ -1,9 +1,9 @@
-function denyGuard() {
-  return this.url === '/index' || this.url.length === 7;
+function denyGuard(ctx) {
+  return ctx.url === '/index' || ctx.url.length === 7;
 }
 
-function allowGuard() {
-  return this.url === '/a-url-that-doesnt-exist' || this.url.length < 0;
+function allowGuard(ctx) {
+  return ctx.url === '/a-url-that-doesnt-exist' || ctx.url.length < 0;
 }
 
 module.exports = [
