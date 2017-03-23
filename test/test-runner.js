@@ -7,11 +7,17 @@ const request = require('supertest');
 module.exports = runTests;
 
 function runTests(testName, scenariosPath) {
-  let middleware = function *() {
+  let midGen = function *() {
     this.body = { executed: true };
   };
 
-  middleware.unless = unless;
+  midGen.unless = unless;
+
+  let midFun = function() {
+    this.body = { executed: true };
+  };
+
+  midFun.unless = unless;
 
   describe(testName, function () {
 
@@ -33,7 +39,11 @@ function runTests(testName, scenariosPath) {
           });
         }
 
-        app.use(middleware.unless(config));
+        app.use(midGen.unless(config));
+        request(app.listen())[testMethod](scenario.testSample)
+          .expect(scenario.expected);
+
+        app.use(midGen.unless(config));
         request(app.listen())[testMethod](scenario.testSample)
           .expect(scenario.expected, done);
       });
