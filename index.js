@@ -19,7 +19,7 @@ module.exports = function(options) {
     var requestedUrl = url.parse((opts.useOriginalUrl ? ctx.originalUrl : ctx.url) || '', true);
 
     // any match means 'skip original middleware'
-    if (matchesCustom(this, opts) || matchesPath(requestedUrl, opts) ||
+    if (matchesCustom(ctx, opts) || matchesPath(requestedUrl, opts) ||
         matchesExtension(requestedUrl, opts) || matchesMethod(ctx.method, opts)) {
       return next();
     }
@@ -37,7 +37,7 @@ module.exports = function(options) {
  */
 function matchesCustom(ctx, opts) {
   if (opts.custom) {
-    return opts.custom.call(ctx);
+    return opts.custom(ctx);
   }
   return false;
 }
