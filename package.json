@@ -1,8 +1,9 @@
 {
   "name": "koa-unless",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Conditionally add a middleware to Koa with some common patterns.",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "test": "make test"
   },
