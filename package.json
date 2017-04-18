@@ -19,9 +19,11 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@types/koa": "^2.0.39",
     "koa": "^2.0.1",
     "mocha": "^2.2.5",
     "supertest": "^1.0.1"
+  },
+  "dependencies": {
+    "@types/koa": "^2.0.39"
   }
 }
