@@ -38,7 +38,7 @@ describe('koa-unless', function() {
     it('should not call the middleware when one of the path match', function(done) {
       var app = new Koa();
 
-      app.use(middleware.unless({ path: [ {url: '/foo', method: 'GET'}] }));
+      app.use(middleware.unless({ path: [ {url: '/foo', methods: 'GET'}] }));
       request(app.listen())
         .get('/foo')
         .expect(404, done);
@@ -47,7 +47,7 @@ describe('koa-unless', function() {
     it('should call the middleware when the path doesnt match', function(done) {
       var app = new Koa();
 
-      app.use(middleware.unless({ path: [ {url: '/foo', method: 'POST'}] }));
+      app.use(middleware.unless({ path: [ {url: '/foo', methods: 'POST'}] }));
       request(app.listen())
         .get('/bar')
         .expect(200, done);
