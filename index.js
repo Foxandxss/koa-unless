@@ -16,17 +16,48 @@ module.exports = function(options) {
 
   // Returns the middleware that wraps the original one.
   return function *(next) {
-    var requestedUrl = url.parse((opts.useOriginalUrl ? this.originalUrl : this.url) || '', true);
 
     // any match means 'skip original middleware'
-    if (matchesCustom(this, opts) || matchesPath(requestedUrl, opts) ||
-        matchesExtension(requestedUrl, opts) || matchesMethod(this.method, opts)) {
+    if (matchesCustom(this, opts) || matchesPath(this, opts) ||
+        matchesExtension(this, opts) || matchesMethod(this.method, opts)) {
       return yield *next;
     }
 
     yield *originalMiddleware.call(this, next);
   };
 };
+
+/**
+ * Returns requested URL
+ *
+ * @param ctx - Koa context
+ * @param opts - unless configuration
+ * @returns {string}
+ */
+function getRequestedUrl(ctx, opts) {
+  return url.parse((opts.useOriginalUrl ? ctx.originalUrl : ctx.url) || '', true);
+}
+
+/**
+ * Returns boolean indicating whether the requestedUrl matches
+ *
+ * @param ctx - Koa context
+ * @param opts - unless configuration
+ * @returns {boolean}
+ */
+function isUrlMatch(path, requestedUrl) {
+  var ret = (typeof path === 'string' && path === requestedUrl.pathname) ||
+    (path instanceof RegExp && !!path.exec(requestedUrl.pathname));
+
+  if (path instanceof RegExp) {
+    path.lastIndex = 0;
+  }
+
+  if (path && path.url) {
+    ret = isUrlMatch(path.url, requestedUrl)
+  }
+  return ret;
+}
 
 /**
  * Returns boolean indicating whether the custom function returns true.
@@ -45,18 +76,21 @@ function matchesCustom(ctx, opts) {
 /**
  * Returns boolean indicating whether the requestUrl matches against the paths configured.
  *
- * @param requestedUrl - url requested by user
+ * @param ctx - Koa context
  * @param opts - unless configuration
  * @returns {boolean}
  */
-function matchesPath(requestedUrl, opts) {
+function matchesPath(ctx, opts) {
   var paths = !opts.path || Array.isArray(opts.path) ?
     opts.path : [opts.path];
 
   if (paths) {
+    var requestedUrl = getRequestedUrl(ctx, opts);
     return paths.some(function(p) {
-      return (typeof p === 'string' && p === requestedUrl.pathname) ||
-        (p instanceof RegExp && !! p.exec(requestedUrl.pathname));
+
+      var matches = isUrlMatch(p, requestedUrl)
+      if (!p.methods) return matches;
+      return matches && matchesMethod(ctx.method, { method: p.methods });
     });
   }
 
@@ -66,15 +100,16 @@ function matchesPath(requestedUrl, opts) {
 /**
  * Returns boolean indicating whether the requestUrl ends with the configured extensions.
  *
- * @param requestedUrl - url requested by user
+ * @param ctx - Koa context
  * @param opts - unless configuration
  * @returns {boolean}
  */
-function matchesExtension(requestedUrl, opts) {
+function matchesExtension(ctx, opts) {
   var exts = !opts.ext || Array.isArray(opts.ext) ?
     opts.ext : [opts.ext];
 
   if (exts) {
+    var requestedUrl = getRequestedUrl(ctx, opts);
     return exts.some(function(ext) {
       return requestedUrl.pathname.substr(ext.length * -1) === ext;
     });
@@ -84,7 +119,7 @@ function matchesExtension(requestedUrl, opts) {
 /**
  * Returns boolean indicating whether the request method matches the configured methods.
  *
- * @param requestedUrl - url requested by user
+ * @param method - request method
  * @param opts - unless configuration
  * @returns {boolean}
  */
