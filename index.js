@@ -89,8 +89,8 @@ function matchesPath(ctx, opts) {
     return paths.some(function(p) {
 
       var matches = isUrlMatch(p, requestedUrl)
-      if (!p.method) return matches;
-      return matches && matchesMethod(ctx.method, { method: p.method });
+      if (!p.methods) return matches;
+      return matches && matchesMethod(ctx.method, { method: p.methods });
     });
   }
 
