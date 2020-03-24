@@ -3,6 +3,7 @@
   "version": "1.0.7",
   "description": "Conditionally add a middleware to Koa with some common patterns.",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "test": "make test"
   },
@@ -21,5 +22,8 @@
     "koa": "^2.0.1",
     "mocha": "^2.2.5",
     "supertest": "^1.0.1"
+  },
+  "dependencies": {
+    "@types/koa": "^2.0.39"
   }
 }
