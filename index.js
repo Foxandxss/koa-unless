@@ -18,17 +18,48 @@ module.exports = function (options) {
 
   // Returns the middleware that wraps the original one.
   return function (ctx, next) {
-    var requestedUrl = url.parse((opts.useOriginalUrl ? ctx.originalUrl : ctx.url) || '', true);
 
     // any match means 'skip original middleware'
-    if (matchesCustom(ctx, opts) || matchesPath(requestedUrl, opts) ||
-      matchesExtension(requestedUrl, opts) || matchesMethod(ctx.method, opts)) {
+    if (matchesCustom(ctx, opts) || matchesPath(ctx, opts) ||
+        matchesExtension(ctx, opts) || matchesMethod(ctx.method, opts)) {
       return next();
     }
 
     return originalMiddleware(ctx, next);
   };
 };
+
+/**
+ * Returns requested URL
+ *
+ * @param ctx - Koa context
+ * @param opts - unless configuration
+ * @returns {string}
+ */
+function getRequestedUrl(ctx, opts) {
+  return url.parse((opts.useOriginalUrl ? ctx.originalUrl : ctx.url) || '', true);
+}
+
+/**
+ * Returns boolean indicating whether the requestedUrl matches
+ *
+ * @param ctx - Koa context
+ * @param opts - unless configuration
+ * @returns {boolean}
+ */
+function isUrlMatch(path, requestedUrl) {
+  var ret = (typeof path === 'string' && path === requestedUrl.pathname) ||
+    (path instanceof RegExp && !!path.exec(requestedUrl.pathname));
+
+  if (path instanceof RegExp) {
+    path.lastIndex = 0;
+  }
+
+  if (path && path.url) {
+    ret = isUrlMatch(path.url, requestedUrl)
+  }
+  return ret;
+}
 
 /**
  * Returns boolean indicating whether the custom function returns true.
@@ -51,15 +82,18 @@ function matchesCustom(ctx, opts) {
  * @param opts - unless configuration
  * @returns {boolean}
  */
-function matchesPath(requestedUrl, opts) {
+function matchesPath(ctx, opts) {
   var paths = !opts.path || Array.isArray(opts.path) ?
     opts.path : [opts.path];
 
   if (paths) {
-    return paths.some(function (p) {
-        return (typeof p === 'string' && p === requestedUrl.pathname) ||
-          (p instanceof RegExp && !!p.exec(requestedUrl.pathname));
-      });
+    var requestedUrl = getRequestedUrl(ctx, opts);
+    return paths.some(function(p) {
+
+      var matches = isUrlMatch(p, requestedUrl)
+      if (!p.methods) return matches;
+      return matches && matchesMethod(ctx.method, { method: p.methods });
+    });
   }
 
   return false;
@@ -72,11 +106,12 @@ function matchesPath(requestedUrl, opts) {
  * @param opts - unless configuration
  * @returns {boolean}
  */
-function matchesExtension(requestedUrl, opts) {
+function matchesExtension(ctx, opts) {
   var exts = !opts.ext || Array.isArray(opts.ext) ?
     opts.ext : [opts.ext];
 
   if (exts) {
+    var requestedUrl = getRequestedUrl(ctx, opts);
     return exts.some(function(ext) {
       return requestedUrl.pathname.substr(ext.length * -1) === ext;
     });

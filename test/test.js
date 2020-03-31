@@ -34,6 +34,26 @@ describe('koa-unless', function() {
     });
   });
 
+  describe('with PATH URL and Method exception', function() {
+    it('should not call the middleware when one of the path match', function(done) {
+      var app = new Koa();
+
+      app.use(middleware.unless({ path: [ {url: '/foo', methods: 'GET'}] }));
+      request(app.listen())
+        .get('/foo')
+        .expect(404, done);
+    });
+
+    it('should call the middleware when the path doesnt match', function(done) {
+      var app = new Koa();
+
+      app.use(middleware.unless({ path: [ {url: '/foo', methods: 'POST'}] }));
+      request(app.listen())
+        .get('/bar')
+        .expect(200, done);
+    });
+  });
+
   describe('with PATH (regexp) exception', function() {
     it('should not call the middleware when the regex match', function(done) {
       var app = new Koa();
